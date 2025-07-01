@@ -78,7 +78,7 @@ const Cart = () => {
 
               <div className="divide-y divide-gray-200">
                 {cart && cart.map((item) => (
-                  <div key={item.product._id} className="p-6">
+                  <div key={item.product._id + '-' + item.rentalDays} className="p-6">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
                         <img

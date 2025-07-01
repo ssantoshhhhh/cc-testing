@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const session = require('express-session');
 
 // Load environment variables
 dotenv.config({ path: './config.env' });
@@ -17,14 +18,46 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your_session_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false, // set to true if using HTTPS
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    sameSite: 'lax'
+  }
+}));
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/campus_connect')
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Backend API is working!',
+    status: 'success',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: '/api/auth',
+      products: '/api/products',
+      orders: '/api/orders',
+      users: '/api/users',
+      admin: '/api/admin'
+    }
+  });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -50,4 +83,4 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+});

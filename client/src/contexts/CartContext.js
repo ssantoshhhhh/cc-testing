@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
@@ -46,7 +48,7 @@ const cartReducer = (state, action) => {
       }
 
     case 'REMOVE_ITEM':
-      const filteredItems = state.items.filter(item => item.product._id !== action.payload.productId);
+      const filteredItems = state.items.filter(item => item.product._id !== action.payload);
       const newTotalAmount = filteredItems.reduce(
         (total, item) => total + (item.product.pricePerDay * item.quantity * item.rentalDays),
         0
@@ -108,24 +110,123 @@ const cartReducer = (state, action) => {
 
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const { user, isAuthenticated, loading } = useAuth();
 
-  // Load cart from localStorage on mount
+  // Helper to get the correct localStorage key
+  const getCartKey = () => (isAuthenticated && user && user._id ? `cart_${user._id}` : 'cart');
+
+  // Load cart from backend for logged-in users, or from localStorage for guests
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        const cartData = JSON.parse(savedCart);
-        dispatch({ type: 'LOAD_CART', payload: cartData });
-      } catch (error) {
-        console.error('Error loading cart from localStorage:', error);
+    if (loading) return;
+    const fetchAndSetCart = async () => {
+      if (isAuthenticated && user && user._id) {
+        try {
+          const res = await axios.get('/api/users/cart');
+          const backendCart = res.data && Array.isArray(res.data.cart) ? res.data.cart : [];
+          if (backendCart.length > 0) {
+            // Use backend cart if it exists
+            dispatch({ type: 'LOAD_CART', payload: { ...initialState, items: backendCart } });
+            localStorage.setItem(getCartKey(), JSON.stringify({ ...initialState, items: backendCart }));
+          } else {
+            // If backend cart is empty, check local cart
+            const savedCart = localStorage.getItem(getCartKey());
+            if (savedCart) {
+              try {
+                const cartData = JSON.parse(savedCart);
+                if (cartData.items && cartData.items.length > 0) {
+                  // Sync local cart to backend
+                  await axios.post('/api/users/cart', {
+                    cart: cartData.items.map(item => ({
+                      product: typeof item.product === 'object' ? item.product._id : item.product,
+                      quantity: item.quantity,
+                      rentalDays: item.rentalDays
+                    }))
+                  });
+                  dispatch({ type: 'LOAD_CART', payload: cartData });
+                } else {
+                  dispatch({ type: 'LOAD_CART', payload: { ...initialState } });
+                }
+              } catch (error) {
+                console.error('Error loading cart from localStorage:', error);
+                dispatch({ type: 'LOAD_CART', payload: { ...initialState } });
+              }
+            } else {
+              dispatch({ type: 'LOAD_CART', payload: { ...initialState } });
+            }
+          }
+        } catch (err) {
+          // fallback to localStorage if backend fails
+          const savedCart = localStorage.getItem(getCartKey());
+          if (savedCart) {
+            try {
+              const cartData = JSON.parse(savedCart);
+              dispatch({ type: 'LOAD_CART', payload: cartData });
+            } catch (error) {
+              console.error('Error loading cart from localStorage:', error);
+              dispatch({ type: 'LOAD_CART', payload: { ...initialState } });
+            }
+          } else {
+            dispatch({ type: 'LOAD_CART', payload: { ...initialState } });
+          }
+        }
+      } else {
+        // Guest: load from localStorage
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+          try {
+            const cartData = JSON.parse(savedCart);
+            dispatch({ type: 'LOAD_CART', payload: cartData });
+          } catch (error) {
+            console.error('Error loading cart from localStorage:', error);
+            dispatch({ type: 'LOAD_CART', payload: { ...initialState } });
+          }
+        } else {
+          dispatch({ type: 'LOAD_CART', payload: { ...initialState } });
+        }
       }
-    }
-  }, []);
+    };
+    fetchAndSetCart();
+    // eslint-disable-next-line
+  }, [isAuthenticated, loading, user]);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to backend and to the correct localStorage key whenever it changes
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(state));
-  }, [state]);
+    localStorage.setItem(getCartKey(), JSON.stringify(state));
+    if (isAuthenticated) {
+      axios.post('/api/users/cart', {
+        cart: state.items
+          .filter(item => item.product && (typeof item.product === 'string' || (typeof item.product === 'object' && item.product._id)))
+          .map(item => ({
+            product: typeof item.product === 'object' ? item.product._id : item.product,
+            quantity: item.quantity,
+            rentalDays: item.rentalDays
+          }))
+      }).catch(() => {/* ignore errors for now */});
+    }
+  }, [state, isAuthenticated, user]);
+
+  // On logout, clear user-specific cart from localStorage
+  useEffect(() => {
+    if (!isAuthenticated && user && user._id) {
+      localStorage.removeItem(`cart_${user._id}`);
+    }
+    // eslint-disable-next-line
+  }, [isAuthenticated, user]);
+
+  // Helper to sync cart to backend
+  const syncCartToBackend = (items) => {
+    if (isAuthenticated) {
+      axios.post('/api/users/cart', {
+        cart: items
+          .filter(item => item.product && (typeof item.product === 'string' || (typeof item.product === 'object' && item.product._id)))
+          .map(item => ({
+            product: typeof item.product === 'object' ? item.product._id : item.product,
+            quantity: item.quantity,
+            rentalDays: item.rentalDays
+          }))
+      }).catch(() => {/* ignore errors for now */});
+    }
+  };
 
   // Add item to cart
   const addToCart = (product, quantity = 1, rentalDays = 1) => {
@@ -147,16 +248,24 @@ export const CartProvider = ({ children }) => {
         rentalDays,
       },
     });
+    // Sync to backend after add
+    syncCartToBackend([
+      ...state.items,
+      { product, quantity, rentalDays }
+    ]);
     toast.success(`${product.name} added to cart`);
     return true;
   };
 
   // Remove item from cart
   const removeFromCart = (productId) => {
+    const newItems = state.items.filter(item => item.product._id !== productId);
     dispatch({
       type: 'REMOVE_ITEM',
       payload: productId,
     });
+    // Sync to backend after remove
+    syncCartToBackend(newItems);
     toast.success('Item removed from cart');
   };
 
@@ -166,13 +275,16 @@ export const CartProvider = ({ children }) => {
       removeFromCart(productId);
       return;
     }
-
     const item = state.items.find(item => item.product._id === productId);
     if (item && quantity > item.product.availableQuantity) {
       toast.error(`Only ${item.product.availableQuantity} items available`);
       return;
     }
-
+    const newItems = state.items.map(item =>
+      item.product._id === productId
+        ? { ...item, quantity }
+        : item
+    );
     dispatch({
       type: 'UPDATE_QUANTITY',
       payload: {
@@ -180,6 +292,8 @@ export const CartProvider = ({ children }) => {
         quantity,
       },
     });
+    // Sync to backend after update
+    syncCartToBackend(newItems);
   };
 
   // Update rental days
@@ -188,16 +302,20 @@ export const CartProvider = ({ children }) => {
       toast.error('Rental days must be at least 1');
       return;
     }
-
+    const newItems = state.items.map(item => ({ ...item, rentalDays: days }));
     dispatch({
       type: 'UPDATE_RENTAL_DAYS',
       payload: days,
     });
+    // Sync to backend after update
+    syncCartToBackend(newItems);
   };
 
   // Clear cart
   const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
+    // Sync to backend after clear
+    syncCartToBackend([]);
     toast.success('Cart cleared');
   };
 

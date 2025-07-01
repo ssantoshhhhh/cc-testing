@@ -49,13 +49,10 @@ router.post('/register', [
       phone,
       department
     });
-
-    // Generate token
-    const token = generateToken(user._id);
-
+    // Set session
+    req.session.userId = user._id;
     res.status(201).json({
       success: true,
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -109,15 +106,10 @@ router.post('/login', [
       console.log('Password does not match for user:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-
-    // Generate token
-    const token = generateToken(user._id);
-
-    console.log('Login successful for user:', user.name);
-
+    // Set session
+    req.session.userId = user._id;
     res.json({
       success: true,
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -250,21 +242,25 @@ router.put('/reset-password/:resettoken', [
   }
 });
 
+// @route   POST /api/auth/logout
+// @desc    Logout user
+// @access  Public
+router.post('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie('connect.sid');
+    res.json({ success: true, message: 'Logged out successfully' });
+  });
+});
+
 // @route   GET /api/auth/me
 // @desc    Get current user
 // @access  Private
 router.get('/me', protect, async (req, res) => {
   try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'User not authenticated' });
-    }
-
     const user = await User.findById(req.user.id);
-    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
     res.json({
       success: true,
       user: {

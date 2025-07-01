@@ -223,7 +223,7 @@ const Checkout = () => {
                   
                   <div className="space-y-3">
                     {cart && cart.map((item) => (
-                      <div key={item.product._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div key={item.product._id + '-' + item.rentalDays} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <img
                             src={item.product.image || '/placeholder-product.svg'}

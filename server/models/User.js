@@ -42,6 +42,26 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  // Persistent cart for logged-in users
+  cart: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        min: 1
+      },
+      rentalDays: {
+        type: Number,
+        required: true,
+        min: 1
+      }
+    }
+  ],
   resetPasswordToken: String,
   resetPasswordExpire: Date,
   createdAt: {

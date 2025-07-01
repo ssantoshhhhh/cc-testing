@@ -2,11 +2,13 @@ import React, { createContext, useContext, useReducer, useEffect, useCallback } 
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+// Configure axios to send cookies with requests
+axios.defaults.withCredentials = true;
+
 const AuthContext = createContext();
 
 const initialState = {
   user: null,
-  token: localStorage.getItem('token'),
   isAuthenticated: false,
   loading: true,
 };
@@ -17,17 +19,14 @@ const authReducer = (state, action) => {
       return {
         ...state,
         user: action.payload.user,
-        token: action.payload.token,
         isAuthenticated: true,
         loading: false,
       };
     case 'LOGIN_FAIL':
     case 'LOGOUT':
-      localStorage.removeItem('token');
       return {
         ...state,
         user: null,
-        token: null,
         isAuthenticated: false,
         loading: false,
       };
@@ -42,7 +41,6 @@ const authReducer = (state, action) => {
       return {
         ...state,
         user: null,
-        token: null,
         isAuthenticated: false,
         loading: false,
       };
@@ -59,43 +57,22 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Set auth token header
-  const setAuthToken = (token) => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      localStorage.setItem('token', token);
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('token');
-    }
-  };
-
   // Load user
   const loadUser = useCallback(async () => {
-    if (state.token) {
-      setAuthToken(state.token);
-      try {
-        const res = await axios.get('/api/auth/me');
-        if (res.data.success && res.data.user) {
-          dispatch({
-            type: 'USER_LOADED',
-            payload: res.data.user,
-          });
-        } else {
-          // Invalid response, clear token
-          dispatch({ type: 'AUTH_ERROR' });
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-        // If 401 or 404, clear the invalid token
-        if (error.response?.status === 401 || error.response?.status === 404) {
-          dispatch({ type: 'AUTH_ERROR' });
-        }
+    try {
+      const res = await axios.get('/api/auth/me');
+      if (res.data.success && res.data.user) {
+        dispatch({
+          type: 'USER_LOADED',
+          payload: res.data.user,
+        });
+      } else {
+        dispatch({ type: 'AUTH_ERROR' });
       }
-    } else {
+    } catch (error) {
       dispatch({ type: 'AUTH_ERROR' });
     }
-  }, [state.token]);
+  }, []);
 
   // Register user
   const register = async (formData) => {
@@ -105,7 +82,6 @@ export const AuthProvider = ({ children }) => {
         type: 'LOGIN_SUCCESS',
         payload: res.data,
       });
-      setAuthToken(res.data.token);
       toast.success('Registration successful!');
       return { success: true };
     } catch (error) {
@@ -119,19 +95,14 @@ export const AuthProvider = ({ children }) => {
   // Login user
   const login = async (formData) => {
     try {
-      console.log('Attempting login with:', formData);
       const res = await axios.post('/api/auth/login', formData);
-      console.log('Login response:', res.data);
-      
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: res.data,
       });
-      setAuthToken(res.data.token);
       toast.success('Login successful!');
       return { success: true };
     } catch (error) {
-      console.error('Login error details:', error.response?.data);
       const message = error.response?.data?.message || 'Login failed';
       toast.error(message);
       dispatch({ type: 'LOGIN_FAIL' });
@@ -140,9 +111,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout user
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await axios.post('/api/auth/logout');
+    } catch (e) {}
     dispatch({ type: 'LOGOUT' });
-    setAuthToken(null);
     toast.success('Logged out successfully');
   };
 
@@ -167,7 +140,6 @@ export const AuthProvider = ({ children }) => {
         type: 'LOGIN_SUCCESS',
         payload: res.data,
       });
-      setAuthToken(res.data.token);
       toast.success('Password reset successful!');
       return { success: true };
     } catch (error) {
@@ -205,32 +177,22 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, [loadUser]);
 
-  useEffect(() => {
-    if (state.token) {
-      setAuthToken(state.token);
-    }
-  }, [state.token]);
-
-  const value = {
-    user: state.user,
-    token: state.token,
-    isAuthenticated: state.isAuthenticated,
-    loading: state.loading,
-    register,
-    login,
-    logout,
-    forgotPassword,
-    resetPassword,
-    updateProfile,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        ...state,
+        register,
+        login,
+        logout,
+        loadUser,
+        forgotPassword,
+        resetPassword,
+        updateProfile,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}; 
+export const useAuth = () => useContext(AuthContext); 

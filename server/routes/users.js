@@ -231,4 +231,57 @@ router.get('/dashboard', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/users/cart
+// @desc    Get current user's cart
+// @access  Private
+router.get('/cart', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('cart.product');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ success: true, cart: user.cart });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/users/cart
+// @desc    Update current user's cart
+// @access  Private
+router.post('/cart', protect, async (req, res) => {
+  try {
+    const { cart } = req.body;
+    if (!Array.isArray(cart)) {
+      return res.status(400).json({ message: 'Cart must be an array' });
+    }
+    // Validate each cart item
+    for (const item of cart) {
+      if (!item.product || typeof item.product !== 'string') {
+        console.error('Invalid cart item: missing or invalid product', item);
+        return res.status(400).json({ message: 'Each cart item must have a valid product ID.' });
+      }
+      if (!item.quantity || typeof item.quantity !== 'number' || item.quantity < 1) {
+        console.error('Invalid cart item: missing or invalid quantity', item);
+        return res.status(400).json({ message: 'Each cart item must have a valid quantity.' });
+      }
+      if (!item.rentalDays || typeof item.rentalDays !== 'number' || item.rentalDays < 1) {
+        console.error('Invalid cart item: missing or invalid rentalDays', item);
+        return res.status(400).json({ message: 'Each cart item must have a valid rentalDays.' });
+      }
+    }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    user.cart = cart;
+    await user.save();
+    res.json({ success: true, cart: user.cart });
+  } catch (error) {
+    console.error('Error in POST /api/users/cart:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router; 

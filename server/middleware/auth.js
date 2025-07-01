@@ -1,24 +1,14 @@
-const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Protect routes - require authentication
+// Protect routes - require authentication (session-based)
 exports.protect = async (req, res, next) => {
-  let token;
-
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token) {
+  if (!req.session.userId) {
     return res.status(401).json({ message: 'Not authorized to access this route' });
   }
 
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Find user by id
-    const user = await User.findById(decoded.id);
+    // Find user by id from session
+    const user = await User.findById(req.session.userId);
     
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
