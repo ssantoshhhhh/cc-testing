@@ -64,9 +64,6 @@ const Login = () => {
                 Email address
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-3 flex items-center pointer-events-none z-10">
-                  <FaEnvelope className="h-5 w-5 text-gray-400" />
-                </span>
                 <input
                   id="email"
                   type="email"
@@ -78,7 +75,7 @@ const Login = () => {
                       message: 'Invalid email address',
                     },
                   })}
-                  className={`input-field pl-12 text-base bg-gray-50 focus:bg-white transition-colors duration-200 ${
+                  className={`input-field text-base bg-gray-50 focus:bg-white transition-colors duration-200 ${
                     errors.email ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Enter your email"
@@ -95,9 +92,6 @@ const Login = () => {
                 Password
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-3 flex items-center pointer-events-none z-10">
-                  <FaLock className="h-5 w-5 text-gray-400" />
-                </span>
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -109,7 +103,7 @@ const Login = () => {
                       message: 'Password must be at least 6 characters',
                     },
                   })}
-                  className={`input-field pl-12 pr-10 text-base bg-gray-50 focus:bg-white transition-colors duration-200 ${
+                  className={`input-field pr-10 text-base bg-gray-50 focus:bg-white transition-colors duration-200 ${
                     errors.password ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Enter your password"

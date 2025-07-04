@@ -81,9 +81,6 @@ const Register = () => {
                 Full Name
               </label>
               <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaUser className="h-5 w-5 text-gray-400" />
-                </div>
                 <input
                   id="name"
                   type="text"
@@ -95,7 +92,7 @@ const Register = () => {
                       message: 'Name must be at least 2 characters',
                     },
                   })}
-                  className={`input-field pl-10 ${
+                  className={`input-field ${
                     errors.name ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Enter your full name"
@@ -112,9 +109,6 @@ const Register = () => {
                 Email address
               </label>
               <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaEnvelope className="h-5 w-5 text-gray-400" />
-                </div>
                 <input
                   id="email"
                   type="email"
@@ -126,7 +120,7 @@ const Register = () => {
                       message: 'Invalid email address',
                     },
                   })}
-                  className={`input-field pl-10 ${
+                  className={`input-field ${
                     errors.email ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Enter your email"
@@ -143,9 +137,6 @@ const Register = () => {
                 Student ID
               </label>
               <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaIdCard className="h-5 w-5 text-gray-400" />
-                </div>
                 <input
                   id="studentId"
                   type="text"
@@ -156,7 +147,7 @@ const Register = () => {
                       message: 'Student ID must be at least 3 characters',
                     },
                   })}
-                  className={`input-field pl-10 ${
+                  className={`input-field ${
                     errors.studentId ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Enter your student ID"
@@ -173,9 +164,6 @@ const Register = () => {
                 Phone Number
               </label>
               <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaPhone className="h-5 w-5 text-gray-400" />
-                </div>
                 <input
                   id="phone"
                   type="tel"
@@ -187,7 +175,7 @@ const Register = () => {
                       message: 'Invalid phone number',
                     },
                   })}
-                  className={`input-field pl-10 ${
+                  className={`input-field ${
                     errors.phone ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Enter your phone number"
@@ -204,15 +192,12 @@ const Register = () => {
                 Department
               </label>
               <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaGraduationCap className="h-5 w-5 text-gray-400" />
-                </div>
                 <select
                   id="department"
                   {...register('department', {
                     required: 'Department is required',
                   })}
-                  className={`input-field pl-10 ${
+                  className={`input-field ${
                     errors.department ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                 >
@@ -235,9 +220,6 @@ const Register = () => {
                 Password
               </label>
               <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaLock className="h-5 w-5 text-gray-400" />
-                </div>
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -249,7 +231,7 @@ const Register = () => {
                       message: 'Password must be at least 6 characters',
                     },
                   })}
-                  className={`input-field pl-10 pr-10 ${
+                  className={`input-field pr-10 ${
                     errors.password ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Create a password"
@@ -277,9 +259,6 @@ const Register = () => {
                 Confirm Password
               </label>
               <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaLock className="h-5 w-5 text-gray-400" />
-                </div>
                 <input
                   id="confirmPassword"
                   type="password"
@@ -289,7 +268,7 @@ const Register = () => {
                     validate: (value) =>
                       value === password || 'Passwords do not match',
                   })}
-                  className={`input-field pl-10 ${
+                  className={`input-field ${
                     errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                   placeholder="Confirm your password"

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaPaperPlane } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import emailjs from 'emailjs-com';
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,10 +17,24 @@ const Contact = () => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
-      reset();
+      const result = await emailjs.send(
+        'service_lmv5peg',
+        'template_sd4nh4d',
+        {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          subject: data.subject,
+          message: data.message,
+        },
+        'W9j5LMZW1Io_iLte2'
+      );
+      if (result.status === 200) {
+        toast.success("Message sent successfully! We'll get back to you soon.");
+        reset();
+      } else {
+        toast.error('Failed to send message. Please try again.');
+      }
     } catch (error) {
       toast.error('Failed to send message. Please try again.');
     } finally {
