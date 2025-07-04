@@ -46,8 +46,8 @@ const Contact = () => {
     {
       icon: <FaEnvelope className="text-2xl" />,
       title: 'Email',
-      content: 'info@campusconnect.com',
-      link: 'mailto:info@campusconnect.com'
+      content: 'srkrcampusconnect@gmail.com',
+      link: 'mailto:srkrcampusconnect@gmail.com'
     },
     {
       icon: <FaPhone className="text-2xl" />,
@@ -307,13 +307,19 @@ const Contact = () => {
         <div className="mt-16">
           <div className="bg-white rounded-lg shadow-soft p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Find Us</h2>
-            <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-              <div className="text-center">
-                <FaMapMarkerAlt className="text-4xl text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Interactive map coming soon</p>
-                <p className="text-sm text-gray-500 mt-2">123 Campus Drive, University City, UC 12345</p>
-              </div>
+            <div className="bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '400px' }}>
+              <iframe
+                title="SRKR Engineering College Map"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3825.234964479836!2d81.5079643148606!3d16.54074298861351!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a37a3b2e2e2e2e3%3A0x7e4e2e2e2e2e2e2e!2sSagi%20Rama%20Krishnam%20Raju%20Engineering%20College!5e0!3m2!1sen!2sin!4v1680000000000!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
+            <p className="text-center text-gray-600 mt-4">Sagi Rama Krishnam Raju Engineering College, Chinna-Amiram, Bhimavaram, Andhra Pradesh 534204</p>
           </div>
         </div>
       </div>
