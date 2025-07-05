@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 
 // Configure axios to send cookies with requests
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = 'http://localhost:8001';
 
 const AuthContext = createContext();
 

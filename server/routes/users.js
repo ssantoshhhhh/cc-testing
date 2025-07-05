@@ -253,9 +253,12 @@ router.get('/cart', protect, async (req, res) => {
 router.post('/cart', protect, async (req, res) => {
   try {
     const { cart } = req.body;
+    console.log('Received cart data:', cart);
+    
     if (!Array.isArray(cart)) {
       return res.status(400).json({ message: 'Cart must be an array' });
     }
+    
     // Validate each cart item
     for (const item of cart) {
       if (!item.product || typeof item.product !== 'string') {
@@ -271,13 +274,25 @@ router.post('/cart', protect, async (req, res) => {
         return res.status(400).json({ message: 'Each cart item must have a valid rentalDays.' });
       }
     }
+    
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    user.cart = cart;
+    
+    // Convert cart items to the format expected by the User model
+    const cartItems = cart.map(item => ({
+      product: item.product,
+      quantity: item.quantity,
+      rentalDays: item.rentalDays
+    }));
+    
+    user.cart = cartItems;
     await user.save();
-    res.json({ success: true, cart: user.cart });
+    
+    // Return the populated cart
+    const populatedUser = await User.findById(req.user.id).populate('cart.product');
+    res.json({ success: true, cart: populatedUser.cart });
   } catch (error) {
     console.error('Error in POST /api/users/cart:', error);
     res.status(500).json({ message: 'Server error' });

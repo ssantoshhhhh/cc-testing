@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Test</title>
+</head>
+<body>
+    <h1>Cart Test</h1>
+    <div id="cart-status">Loading...</div>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testCart()">Test Cart</button>
+    <button onclick="addToCart()">Add to Cart</button>
+    <button onclick="getCart()">Get Cart</button>
+    
+    <script>
+        const API_BASE = 'http://localhost:8001';
+        
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'john@example.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                document.getElementById('cart-status').textContent = `Login: ${JSON.stringify(data)}`;
+            } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('cart-status').textContent = `Login error: ${error.message}`;
+            }
+        }
+        
+        async function testCart() {
+            try {
+                const response = await fetch(`${API_BASE}/api/users/cart`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                console.log('Cart response:', data);
+                document.getElementById('cart-status').textContent = `Cart: ${JSON.stringify(data)}`;
+            } catch (error) {
+                console.error('Cart error:', error);
+                document.getElementById('cart-status').textContent = `Cart error: ${error.message}`;
+            }
+        }
+        
+        async function addToCart() {
+            try {
+                const cartData = {
+                    cart: [{
+                        product: '685ecf516e9de95ac0d5ca95',
+                        quantity: 1,
+                        rentalDays: 2
+                    }]
+                };
+                
+                const response = await fetch(`${API_BASE}/api/users/cart`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(cartData)
+                });
+                
+                const data = await response.json();
+                console.log('Add to cart response:', data);
+                document.getElementById('cart-status').textContent = `Add to cart: ${JSON.stringify(data)}`;
+            } catch (error) {
+                console.error('Add to cart error:', error);
+                document.getElementById('cart-status').textContent = `Add to cart error: ${error.message}`;
+            }
+        }
+        
+        async function getCart() {
+            try {
+                const response = await fetch(`${API_BASE}/api/users/cart`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                console.log('Get cart response:', data);
+                document.getElementById('cart-status').textContent = `Get cart: ${JSON.stringify(data)}`;
+            } catch (error) {
+                console.error('Get cart error:', error);
+                document.getElementById('cart-status').textContent = `Get cart error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 

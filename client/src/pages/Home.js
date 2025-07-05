@@ -4,6 +4,7 @@ import { useQuery } from 'react-query';
 import axios from 'axios';
 import { FaArrowRight, FaStar, FaClock, FaShieldAlt } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
+import CartTest from '../components/CartTest';
 
 const Home = () => {
   const [featuredProduct, setFeaturedProduct] = useState(null);
@@ -56,6 +57,9 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
+      {/* Cart Test Component - Temporary for testing */}
+      <CartTest />
+      
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-green-50 to-green-100 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
