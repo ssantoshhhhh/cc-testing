@@ -138,6 +138,7 @@ const Collection = () => {
         {products.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
+              
               <div
                 key={product._id}
                 className="bg-white rounded-lg shadow-soft overflow-hidden hover:shadow-medium transition-shadow duration-300"
