@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import axios from 'axios';
 import { FaArrowRight, FaStar, FaClock, FaShieldAlt } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext';
 
 const Home = () => {
   const [featuredProduct, setFeaturedProduct] = useState(null);
+  const { isAuthenticated } = useAuth();
 
   // Fetch products for the collection preview
   const { data: products, isLoading } = useQuery(
@@ -240,31 +242,33 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-green-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of students who trust Campus Connect for their equipment rental needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/register"
-              className="bg-white text-green-600 hover:bg-gray-100 font-medium py-3 px-8 rounded-lg transition-colors duration-200"
-            >
-              Sign Up Now
-            </Link>
-            <Link
-              to="/contact"
-              className="border-2 border-white text-white hover:bg-white hover:text-green-600 font-medium py-3 px-8 rounded-lg transition-colors duration-200"
-            >
-              Contact Us
-            </Link>
+      {/* CTA Section - Only show when user is not logged in */}
+      {!isAuthenticated && (
+        <section className="py-20 bg-green-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Ready to Get Started?
+            </h2>
+            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+              Join thousands of students who trust Campus Connect for their equipment rental needs.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/register"
+                className="bg-white text-green-600 hover:bg-gray-100 font-medium py-3 px-8 rounded-lg transition-colors duration-200"
+              >
+                Sign Up Now
+              </Link>
+              <Link
+                to="/contact"
+                className="border-2 border-white text-white hover:bg-white hover:text-green-600 font-medium py-3 px-8 rounded-lg transition-colors duration-200"
+              >
+                Contact Us
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 };
