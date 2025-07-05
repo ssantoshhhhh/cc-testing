@@ -74,6 +74,22 @@ const cartReducer = (state, action) => {
         totalAmount: totalAmountWithUpdatedRentalDays
       };
 
+    case 'UPDATE_ITEM_RENTAL_DAYS':
+      const itemsWithUpdatedItemRentalDays = state.items.map(item =>
+        item.product._id === action.payload.productId
+          ? { ...item, rentalDays: action.payload.rentalDays }
+          : item
+      );
+      const totalAmountWithUpdatedItemRentalDays = itemsWithUpdatedItemRentalDays.reduce(
+        (total, item) => total + (item.product.pricePerDay * item.quantity * item.rentalDays),
+        0
+      );
+      return {
+        ...state,
+        items: itemsWithUpdatedItemRentalDays,
+        totalAmount: totalAmountWithUpdatedItemRentalDays
+      };
+
     case 'CLEAR_CART':
       return { ...initialState };
 
@@ -297,6 +313,21 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  // Update rental days for a specific item
+  const updateItemRentalDays = (productId, rentalDays) => {
+    if (rentalDays < 1) {
+      toast.error('Rental days must be at least 1');
+      return;
+    }
+    dispatch({
+      type: 'UPDATE_ITEM_RENTAL_DAYS',
+      payload: {
+        productId,
+        rentalDays,
+      },
+    });
+  };
+
   // Update rental days
   const updateRentalDays = (days) => {
     if (days < 1) {
@@ -355,6 +386,7 @@ export const CartProvider = ({ children }) => {
     removeFromCart,
     updateQuantity,
     updateRentalDays,
+    updateItemRentalDays,
     clearCart,
     getCartItemCount,
     isCartEmpty,

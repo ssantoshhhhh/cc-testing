@@ -226,7 +226,7 @@ const Checkout = () => {
                       <div key={item.product._id + '-' + item.rentalDays} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <img
-                            src={item.product.image || '/placeholder-product.svg'}
+                            src={item.product.images && item.product.images[0] ? item.product.images[0] : '/placeholder-product.svg'}
                             alt={item.product.name}
                             className="w-12 h-12 object-cover rounded"
                           />

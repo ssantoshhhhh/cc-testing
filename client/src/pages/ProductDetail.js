@@ -15,7 +15,7 @@ const ProductDetail = () => {
   const [rentalDays, setRentalDays] = useState(1);
   const [quantity, setQuantity] = useState(1);
 
-  const { data: product, isLoading, error } = useQuery(
+  const { data: productResponse, isLoading, error } = useQuery(
     ['product', id],
     async () => {
       const response = await axios.get(`/api/products/${id}`);
@@ -26,6 +26,8 @@ const ProductDetail = () => {
       refetchOnWindowFocus: false,
     }
   );
+
+  const product = productResponse?.data;
 
   const handleAddToCart = () => {
     if (!user) {
@@ -115,7 +117,7 @@ const ProductDetail = () => {
             <div className="space-y-4">
               <div className="aspect-w-1 aspect-h-1 w-full">
                 <img
-                  src={product.image || '/placeholder-product.svg'}
+                  src={product.images && product.images[0] ? product.images[0] : '/placeholder-product.svg'}
                   alt={product.name}
                   className="w-full h-96 object-cover rounded-lg shadow-md"
                 />

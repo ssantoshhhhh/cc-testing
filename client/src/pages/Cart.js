@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { items: cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { items: cart, removeFromCart, updateQuantity, updateItemRentalDays, clearCart } = useCart();
 
   const handleQuantityChange = (productId, newQuantity) => {
     if (newQuantity < 1) {
@@ -20,6 +20,10 @@ const Cart = () => {
   const handleRemoveItem = (productId) => {
     removeFromCart(productId);
     toast.success('Item removed from cart');
+  };
+
+  const handleRentalDaysChange = (productId, newRentalDays) => {
+    updateItemRentalDays(productId, newRentalDays);
   };
 
   const handleProceedToCheckout = () => {
@@ -82,7 +86,7 @@ const Cart = () => {
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
                         <img
-                          src={item.product.image || '/placeholder-product.svg'}
+                          src={item.product.images && item.product.images[0] ? item.product.images[0] : '/placeholder-product.svg'}
                           alt={item.product.name}
                           className="w-20 h-20 object-cover rounded-lg"
                         />
@@ -131,9 +135,17 @@ const Cart = () => {
                             
                             <div className="flex items-center space-x-2">
                               <label className="text-sm font-medium text-gray-700">Duration:</label>
-                              <span className="text-sm text-gray-600">
-                                {item.rentalDays || 1} {(item.rentalDays || 1) === 1 ? 'day' : 'days'}
-                              </span>
+                              <select
+                                value={item.rentalDays || 1}
+                                onChange={(e) => handleRentalDaysChange(item.product._id, parseInt(e.target.value))}
+                                className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500"
+                              >
+                                {[1, 2, 3, 4, 5, 6, 7, 14, 30].map((days) => (
+                                  <option key={days} value={days}>
+                                    {days} {days === 1 ? 'day' : 'days'}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                           </div>
                           
